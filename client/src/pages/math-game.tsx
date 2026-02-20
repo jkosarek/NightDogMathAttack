@@ -443,55 +443,6 @@ export default function MathGame() {
         ))}
       </motion.div>
 
-      {/* ===== SCORE CARDS ===== */}
-      {/* Shows your score, questions answered, streak, and best streak */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-2xl relative z-10"
-      >
-        <Card className="p-3 sm:p-4 text-center border-amber-500/20">
-          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
-            <Trophy className="w-4 h-4 text-amber-400" />
-            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Score</span>
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold text-amber-400" data-testid="text-score">
-            {score}
-          </p>
-        </Card>
-
-        <Card className="p-3 sm:p-4 text-center border-purple-500/20">
-          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
-            <Star className="w-4 h-4 text-purple-400" />
-            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Questions</span>
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold text-purple-400" data-testid="text-total">
-            {totalQuestions}
-          </p>
-        </Card>
-
-        <Card className="p-3 sm:p-4 text-center border-orange-500/20">
-          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
-            <Zap className="w-4 h-4 text-orange-400" />
-            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Streak</span>
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold text-orange-400" data-testid="text-streak">
-            {streak}
-          </p>
-        </Card>
-
-        <Card className="p-3 sm:p-4 text-center border-emerald-500/20">
-          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
-            <Star className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Best</span>
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold text-emerald-400" data-testid="text-best-streak">
-            {bestStreak}
-          </p>
-        </Card>
-      </motion.div>
-
       {/* ===== THE QUESTION CARD ===== */}
       {/* This is the main area where the math question appears */}
       <motion.div
@@ -617,6 +568,55 @@ export default function MathGame() {
           <RefreshCw className="w-4 h-4 mr-1.5" />
           New Battle
         </Button>
+      </motion.div>
+
+      {/* ===== SCORE CARDS ===== */}
+      {/* Shows your score, questions answered, streak, and best streak */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 w-full max-w-2xl relative z-10"
+      >
+        <Card className="p-3 sm:p-4 text-center border-amber-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Trophy className="w-4 h-4 text-amber-400" />
+            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Score</span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold text-amber-400" data-testid="text-score">
+            {score}
+          </p>
+        </Card>
+
+        <Card className="p-3 sm:p-4 text-center border-purple-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Star className="w-4 h-4 text-purple-400" />
+            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Questions</span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold text-purple-400" data-testid="text-total">
+            {totalQuestions}
+          </p>
+        </Card>
+
+        <Card className="p-3 sm:p-4 text-center border-orange-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Zap className="w-4 h-4 text-orange-400" />
+            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Streak</span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold text-orange-400" data-testid="text-streak">
+            {streak}
+          </p>
+        </Card>
+
+        <Card className="p-3 sm:p-4 text-center border-emerald-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Star className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Best</span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold text-emerald-400" data-testid="text-best-streak">
+            {bestStreak}
+          </p>
+        </Card>
       </motion.div>
 
       {/* ===== FUN TIP AT THE BOTTOM ===== */}
