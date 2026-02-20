@@ -11,8 +11,12 @@ import { motion, AnimatePresence } from "framer-motion";
 const OPERATIONS = ["+", "-", "x", "/"] as const;
 type Operation = typeof OPERATIONS[number];
 
+/* ===== CHARACTER TYPE ===== */
+/* The player can choose to be the dog or the dragon */
+type PlayerCharacter = "dog" | "dragon";
+
 /* ===== DOG WINNER MESSAGES ===== */
-/* These messages show when you get the right answer - the dog wins! */
+/* These messages show when you get the right answer playing as the dog */
 const DOG_WINNER_MESSAGES = [
   "You're a dog winner!",
   "The dog is so proud of you!",
@@ -27,7 +31,7 @@ const DOG_WINNER_MESSAGES = [
 ];
 
 /* ===== BAD DRAGON MESSAGES ===== */
-/* These messages show when you get it wrong - the dragon strikes! */
+/* These messages show when you get it wrong playing as the dog */
 const BAD_DRAGON_MESSAGES = [
   "You're a bad dragon!",
   "The dragon breathes fire! Try again!",
@@ -37,6 +41,34 @@ const BAD_DRAGON_MESSAGES = [
   "The sneaky dragon tricked you!",
   "The dragon dances... get the next one!",
   "Oh no, dragon attack! Try again!",
+];
+
+/* ===== DRAGON WINNER MESSAGES ===== */
+/* These messages show when you get the right answer playing as the dragon */
+const DRAGON_WINNER_MESSAGES = [
+  "Dragon power! You got it!",
+  "Fire breath of knowledge!",
+  "The dragon roars with pride!",
+  "Scales of steel, brain of gold!",
+  "Dragon math mastery!",
+  "You breathe fire on that problem!",
+  "The mighty dragon conquers!",
+  "Fearsome and smart!",
+  "Dragon wins this battle!",
+  "Your fire burns bright with brains!",
+];
+
+/* ===== BAD DOG MESSAGES ===== */
+/* These messages show when you get it wrong playing as the dragon */
+const BAD_DOG_MESSAGES = [
+  "The dog fetched the answer first!",
+  "The dog outran you! Try again!",
+  "The pup is too clever!",
+  "Dog snatches the bone of victory!",
+  "Woof! The dog got you!",
+  "The dog digs up the right answer!",
+  "Ruff round! The dog wins this one!",
+  "The dog howls in triumph!",
 ];
 
 /* ===== PICK A RANDOM MESSAGE ===== */
@@ -203,6 +235,10 @@ function Stars() {
 /* ===== THE MAIN GAME COMPONENT ===== */
 /* This is where all the game magic happens! */
 export default function MathGame() {
+  /* ----- Character Selection State ----- */
+  /* null means the player hasn't picked yet - show the selection screen */
+  const [playerCharacter, setPlayerCharacter] = useState<PlayerCharacter | null>(null);
+
   /* ----- Game State ----- */
   /* These keep track of everything in the game */
   const [operation, setOperation] = useState<Operation>("x");
@@ -221,10 +257,15 @@ export default function MathGame() {
   const [dogAnimate, setDogAnimate] = useState("");
   const [dragonAnimate, setDragonAnimate] = useState("");
 
-  /* ----- Focus the input box when the page loads ----- */
+  /* ----- Helper: is the player the dog? ----- */
+  const isDog = playerCharacter === "dog";
+
+  /* ----- Focus the input box when the game starts ----- */
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (playerCharacter) {
+      inputRef.current?.focus();
+    }
+  }, [playerCharacter]);
 
   /* ----- Create a new question ----- */
   const newQuestion = useCallback((op: Operation) => {
@@ -252,25 +293,38 @@ export default function MathGame() {
     setTotalQuestions((prev) => prev + 1);
 
     if (isCorrect) {
-      /* The answer is right! The dog wins! */
+      /* The answer is right! Your character wins! */
       const newStreak = streak + 1;
       setScore((prev) => prev + 1);
       setStreak(newStreak);
       if (newStreak > bestStreak) setBestStreak(newStreak);
-      setFeedback({ correct: true, message: pickRandom(DOG_WINNER_MESSAGES) });
-      /* Make the dog bounce happily */
-      setDogAnimate("bounce");
-      setDragonAnimate("shake");
+      setFeedback({
+        correct: true,
+        message: pickRandom(isDog ? DOG_WINNER_MESSAGES : DRAGON_WINNER_MESSAGES),
+      });
+      /* Make the player's character bounce, opponent shakes */
+      if (isDog) {
+        setDogAnimate("bounce");
+        setDragonAnimate("shake");
+      } else {
+        setDragonAnimate("bounce");
+        setDogAnimate("shake");
+      }
     } else {
-      /* The answer is wrong - the dragon attacks! */
+      /* The answer is wrong - the opponent strikes! */
       setStreak(0);
       setFeedback({
         correct: false,
-        message: `${pickRandom(BAD_DRAGON_MESSAGES)} The answer was ${question.answer}.`,
+        message: `${pickRandom(isDog ? BAD_DRAGON_MESSAGES : BAD_DOG_MESSAGES)} The answer was ${question.answer}.`,
       });
-      /* Make the dragon flash and the dog shake */
-      setDragonAnimate("flash");
-      setDogAnimate("shake");
+      /* Make the opponent flash, player shakes */
+      if (isDog) {
+        setDragonAnimate("flash");
+        setDogAnimate("shake");
+      } else {
+        setDogAnimate("flash");
+        setDragonAnimate("shake");
+      }
     }
 
     setShowFeedback(true);
@@ -279,7 +333,7 @@ export default function MathGame() {
     setTimeout(() => {
       newQuestion(operation);
     }, 2000);
-  }, [userAnswer, question, streak, bestStreak, operation, newQuestion]);
+  }, [userAnswer, question, streak, bestStreak, operation, newQuestion, isDog]);
 
   /* ----- Handle pressing Enter to submit ----- */
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -300,6 +354,110 @@ export default function MathGame() {
     setDragonAnimate("");
     newQuestion(operation);
   };
+
+  /* ----- Character Selection Handler ----- */
+  const selectCharacter = (character: PlayerCharacter) => {
+    setPlayerCharacter(character);
+  };
+
+  /* ----- Go back to character selection ----- */
+  const goToCharacterSelect = () => {
+    setPlayerCharacter(null);
+    setScore(0);
+    setTotalQuestions(0);
+    setStreak(0);
+    setBestStreak(0);
+    setFeedback(null);
+    setShowFeedback(false);
+    setDogAnimate("");
+    setDragonAnimate("");
+    setUserAnswer("");
+    setQuestion(generateQuestion(operation));
+  };
+
+  /* ===== CHARACTER SELECTION SCREEN ===== */
+  /* This screen shows at the start so the player can pick their character */
+  if (!playerCharacter) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative">
+        <Stars />
+
+        <motion.div
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="text-center mb-8 relative z-10"
+        >
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
+            <Moon className="w-8 h-8 sm:w-10 sm:h-10 text-amber-300" />
+            <h1
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight"
+              data-testid="text-title-select"
+            >
+              <span className="text-amber-400">Night Dog</span>
+              <span className="text-red-400"> Math Attack</span>
+            </h1>
+            <Swords className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
+          </div>
+          <p className="text-muted-foreground text-lg sm:text-xl mt-2" data-testid="text-choose-prompt">
+            Choose your character!
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 relative z-10"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => selectCharacter("dog")}
+            className="flex flex-col items-center gap-3 p-6 rounded-2xl border-4 border-amber-400/30 hover:border-amber-400 hover:shadow-[0_0_25px_rgba(251,191,36,0.4)] transition-all duration-300 bg-amber-500/5 cursor-pointer"
+            data-testid="button-select-dog"
+          >
+            <img
+              src="/images/dog-hero.png"
+              alt="Play as Dog"
+              className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl object-cover"
+            />
+            <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 font-bold text-base px-4 py-1">
+              <Shield className="w-4 h-4 mr-1.5" /> Play as Dog
+            </Badge>
+            <p className="text-amber-300/70 text-sm max-w-[160px] text-center">
+              Be the hero pup and defeat the dragon!
+            </p>
+          </motion.button>
+
+          <div className="flex flex-col items-center">
+            <Swords className="w-8 h-8 text-red-400" />
+            <span className="text-sm font-bold text-red-400 mt-1">OR</span>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => selectCharacter("dragon")}
+            className="flex flex-col items-center gap-3 p-6 rounded-2xl border-4 border-red-500/30 hover:border-red-500 hover:shadow-[0_0_25px_rgba(239,68,68,0.4)] transition-all duration-300 bg-red-500/5 cursor-pointer"
+            data-testid="button-select-dragon"
+          >
+            <img
+              src="/images/dragon-villain.png"
+              alt="Play as Dragon"
+              className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl object-cover"
+            />
+            <Badge className="bg-red-500/20 text-red-300 border-red-500/30 font-bold text-base px-4 py-1">
+              <Flame className="w-4 h-4 mr-1.5" /> Play as Dragon
+            </Badge>
+            <p className="text-red-300/70 text-sm max-w-[160px] text-center">
+              Be the mighty dragon and outsmart the dog!
+            </p>
+          </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-6 md:p-8 overflow-y-auto relative">
@@ -326,7 +484,9 @@ export default function MathGame() {
           <Swords className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
         </div>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base" data-testid="text-subtitle">
-          Help the dog defeat the dragon with your math powers!
+          {isDog
+            ? "Help the dog defeat the dragon with your math powers!"
+            : "Use dragon fire to outsmart the dog with math!"}
         </p>
       </motion.div>
 
@@ -343,23 +503,22 @@ export default function MathGame() {
         {/* The dog bounces when you get the right answer */}
         {/* The dog shakes when you get it wrong */}
         <motion.div
-          variants={{ ...bounceAnimation, ...shakeAnimation }}
+          variants={{ ...bounceAnimation, ...shakeAnimation, ...flashAnimation }}
           animate={dogAnimate}
           className="flex flex-col items-center"
         >
           <div className={`relative rounded-2xl overflow-hidden border-4 ${
-            showFeedback && feedback?.correct
+            showFeedback && ((isDog && feedback?.correct) || (!isDog && !feedback?.correct))
               ? "border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.5)]"
               : "border-amber-400/30"
           }`}>
             <img
               src="/images/dog-hero.png"
-              alt="Hero Dog"
+              alt={isDog ? "You - The Dog" : "Opponent Dog"}
               className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 object-cover"
               data-testid="img-dog"
             />
-            {/* Glow effect when the dog wins */}
-            {showFeedback && feedback?.correct && (
+            {showFeedback && ((isDog && feedback?.correct) || (!isDog && !feedback?.correct)) && (
               <motion.div
                 className="absolute inset-0 bg-amber-400/20"
                 animate={{ opacity: [0.2, 0.5, 0.2] }}
@@ -367,8 +526,12 @@ export default function MathGame() {
               />
             )}
           </div>
-          <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/30 font-bold">
-            <Shield className="w-3 h-3 mr-1" /> Hero Dog
+          <Badge className={`mt-2 font-bold ${
+            isDog
+              ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+              : "bg-amber-500/10 text-amber-300/60 border-amber-500/20"
+          }`}>
+            <Shield className="w-3 h-3 mr-1" /> {isDog ? "You (Dog)" : "Enemy Dog"}
           </Badge>
         </motion.div>
 
@@ -387,23 +550,22 @@ export default function MathGame() {
         {/* The dragon flashes when you get it wrong (dragon attack!) */}
         {/* The dragon shakes when you get it right (dog defeats it!) */}
         <motion.div
-          variants={{ ...flashAnimation, ...shakeAnimation }}
+          variants={{ ...flashAnimation, ...shakeAnimation, ...bounceAnimation }}
           animate={dragonAnimate}
           className="flex flex-col items-center"
         >
           <div className={`relative rounded-2xl overflow-hidden border-4 ${
-            showFeedback && !feedback?.correct
+            showFeedback && ((!isDog && feedback?.correct) || (isDog && !feedback?.correct))
               ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]"
               : "border-red-500/30"
           }`}>
             <img
               src="/images/dragon-villain.png"
-              alt="Villain Dragon"
+              alt={!isDog ? "You - The Dragon" : "Opponent Dragon"}
               className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 object-cover"
               data-testid="img-dragon"
             />
-            {/* Red glow when the dragon wins */}
-            {showFeedback && !feedback?.correct && (
+            {showFeedback && ((!isDog && feedback?.correct) || (isDog && !feedback?.correct)) && (
               <motion.div
                 className="absolute inset-0 bg-red-500/20"
                 animate={{ opacity: [0.2, 0.5, 0.2] }}
@@ -411,8 +573,12 @@ export default function MathGame() {
               />
             )}
           </div>
-          <Badge className="mt-2 bg-red-500/20 text-red-300 border-red-500/30 font-bold">
-            <Flame className="w-3 h-3 mr-1" /> Bad Dragon
+          <Badge className={`mt-2 font-bold ${
+            !isDog
+              ? "bg-red-500/20 text-red-300 border-red-500/30"
+              : "bg-red-500/10 text-red-300/60 border-red-500/20"
+          }`}>
+            <Flame className="w-3 h-3 mr-1" /> {!isDog ? "You (Dragon)" : "Enemy Dragon"}
           </Badge>
         </motion.div>
       </motion.div>
@@ -537,11 +703,10 @@ export default function MathGame() {
                   data-testid="text-feedback"
                 >
                   <span className="flex flex-wrap items-center justify-center gap-2">
-                    {feedback.correct ? (
-                      <Shield className="w-6 h-6" />
-                    ) : (
-                      <Flame className="w-6 h-6" />
-                    )}
+                    {feedback.correct
+                      ? (isDog ? <Shield className="w-6 h-6" /> : <Flame className="w-6 h-6" />)
+                      : (isDog ? <Flame className="w-6 h-6" /> : <Shield className="w-6 h-6" />)
+                    }
                     {feedback.message}
                   </span>
                 </div>
@@ -551,13 +716,13 @@ export default function MathGame() {
         </Card>
       </motion.div>
 
-      {/* ===== RESET BUTTON ===== */}
-      {/* Start over with a fresh score */}
+      {/* ===== RESET AND SWITCH BUTTONS ===== */}
+      {/* Start over or switch character */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.4 }}
-        className="mt-6 relative z-10"
+        className="mt-6 flex flex-wrap gap-3 justify-center relative z-10"
       >
         <Button
           variant="outline"
@@ -567,6 +732,15 @@ export default function MathGame() {
         >
           <RefreshCw className="w-4 h-4 mr-1.5" />
           New Battle
+        </Button>
+        <Button
+          variant="outline"
+          onClick={goToCharacterSelect}
+          className="font-semibold"
+          data-testid="button-switch-character"
+        >
+          <Swords className="w-4 h-4 mr-1.5" />
+          Switch Character
         </Button>
       </motion.div>
 
