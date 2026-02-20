@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Zap, Check, X, RefreshCw, Plus, Minus, Divide } from "lucide-react";
+import { Trophy, Star, Zap, Check, X, RefreshCw, Plus, Minus, Divide, Swords, Moon, Shield, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* ===== OPERATION SYMBOLS ===== */
@@ -11,28 +11,32 @@ import { motion, AnimatePresence } from "framer-motion";
 const OPERATIONS = ["+", "-", "x", "/"] as const;
 type Operation = typeof OPERATIONS[number];
 
-/* ===== ENCOURAGING MESSAGES ===== */
-/* These messages show when you get the right answer! */
-const CORRECT_MESSAGES = [
-  "Amazing job!",
-  "You're a math star!",
-  "Fantastic!",
-  "Super smart!",
-  "You nailed it!",
-  "Brilliant!",
-  "Keep it up!",
-  "Math wizard!",
-  "Incredible!",
-  "Way to go!",
+/* ===== DOG WINNER MESSAGES ===== */
+/* These messages show when you get the right answer - the dog wins! */
+const DOG_WINNER_MESSAGES = [
+  "You're a dog winner!",
+  "The dog is so proud of you!",
+  "Woof woof! You nailed it!",
+  "Super pup power!",
+  "The dog does a happy dance!",
+  "Bark bark! Amazing math!",
+  "Good boy energy! You got it!",
+  "The dog wags its tail for you!",
+  "Paw-some job, math hero!",
+  "The dog howls with joy!",
 ];
 
-/* These messages show when you get it wrong - still encouraging! */
-const INCORRECT_MESSAGES = [
-  "Almost! Try the next one!",
-  "Don't worry, you'll get it!",
-  "Keep trying, you're learning!",
-  "So close! Next one's yours!",
-  "That's okay, practice makes perfect!",
+/* ===== BAD DRAGON MESSAGES ===== */
+/* These messages show when you get it wrong - the dragon strikes! */
+const BAD_DRAGON_MESSAGES = [
+  "You're a bad dragon!",
+  "The dragon breathes fire! Try again!",
+  "The dragon laughs... but you'll get it!",
+  "Dragon wins this round!",
+  "The dragon roars! Don't give up!",
+  "The sneaky dragon tricked you!",
+  "The dragon dances... get the next one!",
+  "Oh no, dragon attack! Try again!",
 ];
 
 /* ===== PICK A RANDOM MESSAGE ===== */
@@ -45,28 +49,28 @@ function pickRandom(messages: string[]): string {
 /* Each math operation gets its own fun color */
 function getOperationColor(op: Operation): string {
   switch (op) {
-    case "+": return "bg-emerald-500 dark:bg-emerald-600";
-    case "-": return "bg-sky-500 dark:bg-sky-600";
-    case "x": return "bg-purple-500 dark:bg-purple-600";
-    case "/": return "bg-amber-500 dark:bg-amber-600";
+    case "+": return "bg-emerald-500";
+    case "-": return "bg-sky-500";
+    case "x": return "bg-purple-500";
+    case "/": return "bg-amber-500";
   }
 }
 
 function getOperationBorderColor(op: Operation): string {
   switch (op) {
-    case "+": return "border-emerald-400 dark:border-emerald-500";
-    case "-": return "border-sky-400 dark:border-sky-500";
-    case "x": return "border-purple-400 dark:border-purple-500";
-    case "/": return "border-amber-400 dark:border-amber-500";
+    case "+": return "border-emerald-500/50";
+    case "-": return "border-sky-500/50";
+    case "x": return "border-purple-500/50";
+    case "/": return "border-amber-500/50";
   }
 }
 
 function getOperationTextColor(op: Operation): string {
   switch (op) {
-    case "+": return "text-emerald-600 dark:text-emerald-400";
-    case "-": return "text-sky-600 dark:text-sky-400";
-    case "x": return "text-purple-600 dark:text-purple-400";
-    case "/": return "text-amber-600 dark:text-amber-400";
+    case "+": return "text-emerald-400";
+    case "-": return "text-sky-400";
+    case "x": return "text-purple-400";
+    case "/": return "text-amber-400";
   }
 }
 
@@ -127,6 +131,75 @@ function generateQuestion(operation: Operation): { num1: number; num2: number; a
   return { num1, num2, answer };
 }
 
+/* ===== SHAKE ANIMATION ===== */
+/* This makes the dog or dragon shake when something happens */
+const shakeAnimation = {
+  shake: {
+    x: [0, -8, 8, -8, 8, -4, 4, 0],
+    transition: { duration: 0.5 },
+  },
+};
+
+/* ===== BOUNCE ANIMATION ===== */
+/* This makes the dog bounce happily when you get the right answer */
+const bounceAnimation = {
+  bounce: {
+    y: [0, -20, 0, -10, 0],
+    scale: [1, 1.1, 1, 1.05, 1],
+    transition: { duration: 0.6 },
+  },
+};
+
+/* ===== FLASH ANIMATION ===== */
+/* This makes the dragon flash red when you get the wrong answer */
+const flashAnimation = {
+  flash: {
+    opacity: [1, 0.3, 1, 0.3, 1],
+    scale: [1, 1.15, 1, 1.1, 1],
+    transition: { duration: 0.5 },
+  },
+};
+
+/* ===== TWINKLING STARS ===== */
+/* These are the little stars that twinkle in the night sky background */
+function Stars() {
+  const stars = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    size: Math.random() * 3 + 1,
+    delay: Math.random() * 3,
+    duration: Math.random() * 2 + 2,
+  }));
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+      {stars.map((star) => (
+        <motion.div
+          key={star.id}
+          className="absolute rounded-full bg-yellow-200"
+          style={{
+            left: star.left,
+            top: star.top,
+            width: star.size,
+            height: star.size,
+          }}
+          animate={{
+            opacity: [0.2, 0.8, 0.2],
+            scale: [0.8, 1.2, 0.8],
+          }}
+          transition={{
+            duration: star.duration,
+            delay: star.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ===== THE MAIN GAME COMPONENT ===== */
 /* This is where all the game magic happens! */
 export default function MathGame() {
@@ -143,6 +216,11 @@ export default function MathGame() {
   const [showFeedback, setShowFeedback] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  /* ----- Dog and Dragon animation state ----- */
+  /* These control when the dog and dragon animate */
+  const [dogAnimate, setDogAnimate] = useState("");
+  const [dragonAnimate, setDragonAnimate] = useState("");
+
   /* ----- Focus the input box when the page loads ----- */
   useEffect(() => {
     inputRef.current?.focus();
@@ -153,6 +231,8 @@ export default function MathGame() {
     setQuestion(generateQuestion(op));
     setUserAnswer("");
     setShowFeedback(false);
+    setDogAnimate("");
+    setDragonAnimate("");
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
@@ -172,27 +252,33 @@ export default function MathGame() {
     setTotalQuestions((prev) => prev + 1);
 
     if (isCorrect) {
-      /* The answer is right! */
+      /* The answer is right! The dog wins! */
       const newStreak = streak + 1;
       setScore((prev) => prev + 1);
       setStreak(newStreak);
       if (newStreak > bestStreak) setBestStreak(newStreak);
-      setFeedback({ correct: true, message: pickRandom(CORRECT_MESSAGES) });
+      setFeedback({ correct: true, message: pickRandom(DOG_WINNER_MESSAGES) });
+      /* Make the dog bounce happily */
+      setDogAnimate("bounce");
+      setDragonAnimate("shake");
     } else {
-      /* The answer is wrong, but that's okay! */
+      /* The answer is wrong - the dragon attacks! */
       setStreak(0);
       setFeedback({
         correct: false,
-        message: `${pickRandom(INCORRECT_MESSAGES)} The answer was ${question.answer}.`,
+        message: `${pickRandom(BAD_DRAGON_MESSAGES)} The answer was ${question.answer}.`,
       });
+      /* Make the dragon flash and the dog shake */
+      setDragonAnimate("flash");
+      setDogAnimate("shake");
     }
 
     setShowFeedback(true);
 
-    /* Wait 1.5 seconds then show a new question */
+    /* Wait 2 seconds then show a new question */
     setTimeout(() => {
       newQuestion(operation);
-    }, 1500);
+    }, 2000);
   }, [userAnswer, question, streak, bestStreak, operation, newQuestion]);
 
   /* ----- Handle pressing Enter to submit ----- */
@@ -210,28 +296,125 @@ export default function MathGame() {
     setBestStreak(0);
     setFeedback(null);
     setShowFeedback(false);
+    setDogAnimate("");
+    setDragonAnimate("");
     newQuestion(operation);
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-6 md:p-8 overflow-y-auto">
+    <div className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-6 md:p-8 overflow-y-auto relative">
+      {/* ===== TWINKLING NIGHT SKY STARS ===== */}
+      <Stars />
+
       {/* ===== GAME TITLE ===== */}
+      {/* The name of our game with cool gradient text */}
       <motion.div
         initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="text-center mb-6 sm:mb-8"
+        className="text-center mb-4 sm:mb-6 relative z-10"
       >
-        <h1
-          className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight"
-          data-testid="text-title"
-        >
-          <span className="text-purple-600 dark:text-purple-400">Math</span>
-          <span className="text-pink-500 dark:text-pink-400"> Quest</span>
-        </h1>
-        <p className="text-muted-foreground mt-2 text-base sm:text-lg" data-testid="text-subtitle">
-          Practice your math skills and become a math champion!
+        <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1">
+          <Moon className="w-8 h-8 sm:w-10 sm:h-10 text-amber-300" />
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight"
+            data-testid="text-title"
+          >
+            <span className="text-amber-400">Night Dog</span>
+            <span className="text-red-400"> Math Attack</span>
+          </h1>
+          <Swords className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
+        </div>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base" data-testid="text-subtitle">
+          Help the dog defeat the dragon with your math powers!
         </p>
+      </motion.div>
+
+      {/* ===== DOG AND DRAGON CHARACTERS ===== */}
+      {/* The dog is our hero - the dragon is the villain! */}
+      {/* They animate when you answer a question */}
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="flex items-center justify-center gap-4 sm:gap-8 mb-4 sm:mb-6 relative z-10"
+      >
+        {/* ===== THE DOG (our hero!) ===== */}
+        {/* The dog bounces when you get the right answer */}
+        {/* The dog shakes when you get it wrong */}
+        <motion.div
+          variants={{ ...bounceAnimation, ...shakeAnimation }}
+          animate={dogAnimate}
+          className="flex flex-col items-center"
+        >
+          <div className={`relative rounded-2xl overflow-hidden border-4 ${
+            showFeedback && feedback?.correct
+              ? "border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.5)]"
+              : "border-amber-400/30"
+          }`}>
+            <img
+              src="/images/dog-hero.png"
+              alt="Hero Dog"
+              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 object-cover"
+              data-testid="img-dog"
+            />
+            {/* Glow effect when the dog wins */}
+            {showFeedback && feedback?.correct && (
+              <motion.div
+                className="absolute inset-0 bg-amber-400/20"
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+              />
+            )}
+          </div>
+          <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/30 font-bold">
+            <Shield className="w-3 h-3 mr-1" /> Hero Dog
+          </Badge>
+        </motion.div>
+
+        {/* ===== VS ICON ===== */}
+        {/* The battle symbol between dog and dragon */}
+        <motion.div
+          animate={showFeedback ? { scale: [1, 1.3, 1], rotate: [0, 10, -10, 0] } : {}}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center"
+        >
+          <Swords className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
+          <span className="text-xs sm:text-sm font-bold text-red-400 mt-1">VS</span>
+        </motion.div>
+
+        {/* ===== THE DRAGON (the villain!) ===== */}
+        {/* The dragon flashes when you get it wrong (dragon attack!) */}
+        {/* The dragon shakes when you get it right (dog defeats it!) */}
+        <motion.div
+          variants={{ ...flashAnimation, ...shakeAnimation }}
+          animate={dragonAnimate}
+          className="flex flex-col items-center"
+        >
+          <div className={`relative rounded-2xl overflow-hidden border-4 ${
+            showFeedback && !feedback?.correct
+              ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+              : "border-red-500/30"
+          }`}>
+            <img
+              src="/images/dragon-villain.png"
+              alt="Villain Dragon"
+              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 object-cover"
+              data-testid="img-dragon"
+            />
+            {/* Red glow when the dragon wins */}
+            {showFeedback && !feedback?.correct && (
+              <motion.div
+                className="absolute inset-0 bg-red-500/20"
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+              />
+            )}
+          </div>
+          <Badge className="mt-2 bg-red-500/20 text-red-300 border-red-500/30 font-bold">
+            <Flame className="w-3 h-3 mr-1" /> Bad Dragon
+          </Badge>
+        </motion.div>
       </motion.div>
 
       {/* ===== OPERATION SELECTOR ===== */}
@@ -239,16 +422,16 @@ export default function MathGame() {
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8"
+        transition={{ duration: 0.4, delay: 0.15 }}
+        className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-4 sm:mb-6 relative z-10"
       >
         {OPERATIONS.map((op) => (
           <Button
             key={op}
             variant={operation === op ? "default" : "outline"}
-            className={`font-semibold toggle-elevate ${
+            className={`font-semibold ${
               operation === op
-                ? `${getOperationColor(op)} text-white toggle-elevated`
+                ? `${getOperationColor(op)} text-white`
                 : ""
             }`}
             onClick={() => switchOperation(op)}
@@ -261,64 +444,64 @@ export default function MathGame() {
       </motion.div>
 
       {/* ===== SCORE CARDS ===== */}
-      {/* Shows your score, accuracy, and streaks */}
+      {/* Shows your score, questions answered, streak, and best streak */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8 w-full max-w-2xl"
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-2xl relative z-10"
       >
-        <Card className="p-3 sm:p-4 text-center">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <Trophy className="w-4 h-4 text-amber-500" />
+        <Card className="p-3 sm:p-4 text-center border-amber-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Trophy className="w-4 h-4 text-amber-400" />
             <span className="text-xs sm:text-sm text-muted-foreground font-medium">Score</span>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground" data-testid="text-score">
+          <p className="text-2xl sm:text-3xl font-bold text-amber-400" data-testid="text-score">
             {score}
           </p>
         </Card>
 
-        <Card className="p-3 sm:p-4 text-center">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <Star className="w-4 h-4 text-purple-500" />
+        <Card className="p-3 sm:p-4 text-center border-purple-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Star className="w-4 h-4 text-purple-400" />
             <span className="text-xs sm:text-sm text-muted-foreground font-medium">Questions</span>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground" data-testid="text-total">
+          <p className="text-2xl sm:text-3xl font-bold text-purple-400" data-testid="text-total">
             {totalQuestions}
           </p>
         </Card>
 
-        <Card className="p-3 sm:p-4 text-center">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <Zap className="w-4 h-4 text-orange-500" />
+        <Card className="p-3 sm:p-4 text-center border-orange-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Zap className="w-4 h-4 text-orange-400" />
             <span className="text-xs sm:text-sm text-muted-foreground font-medium">Streak</span>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground" data-testid="text-streak">
+          <p className="text-2xl sm:text-3xl font-bold text-orange-400" data-testid="text-streak">
             {streak}
           </p>
         </Card>
 
-        <Card className="p-3 sm:p-4 text-center">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <Star className="w-4 h-4 text-emerald-500" />
+        <Card className="p-3 sm:p-4 text-center border-emerald-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+            <Star className="w-4 h-4 text-emerald-400" />
             <span className="text-xs sm:text-sm text-muted-foreground font-medium">Best</span>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground" data-testid="text-best-streak">
+          <p className="text-2xl sm:text-3xl font-bold text-emerald-400" data-testid="text-best-streak">
             {bestStreak}
           </p>
         </Card>
       </motion.div>
 
       {/* ===== THE QUESTION CARD ===== */}
-      {/* This is the main area where the question appears */}
+      {/* This is the main area where the math question appears */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="w-full max-w-lg"
+        className="w-full max-w-lg relative z-10"
       >
         <Card className={`p-6 sm:p-8 md:p-10 border-2 ${getOperationBorderColor(operation)}`}>
-          {/* The math question */}
+          {/* The math question numbers and symbol */}
           <AnimatePresence mode="wait">
             <motion.div
               key={`${question.num1}-${question.num2}-${operation}`}
@@ -328,7 +511,7 @@ export default function MathGame() {
               transition={{ duration: 0.25 }}
               className="text-center mb-6 sm:mb-8"
             >
-              <div className="flex items-center justify-center gap-3 sm:gap-4">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
                 <span
                   className="text-5xl sm:text-6xl md:text-7xl font-bold text-foreground"
                   data-testid="text-num1"
@@ -378,13 +561,13 @@ export default function MathGame() {
               className={`font-semibold ${getOperationColor(operation)} text-white`}
               data-testid="button-submit"
             >
-              <Check className="w-5 h-5 mr-1" />
-              Submit
+              <Swords className="w-5 h-5 mr-1" />
+              Attack!
             </Button>
           </div>
 
           {/* ===== FEEDBACK MESSAGE ===== */}
-          {/* Tells the player if they got it right or wrong */}
+          {/* Shows dog winner or bad dragon message with emoji */}
           <AnimatePresence>
             {showFeedback && feedback && (
               <motion.div
@@ -395,18 +578,18 @@ export default function MathGame() {
                 className="overflow-hidden"
               >
                 <div
-                  className={`mt-4 sm:mt-6 p-4 rounded-md text-center font-semibold text-base sm:text-lg ${
+                  className={`mt-4 sm:mt-6 p-4 rounded-lg text-center font-bold text-base sm:text-lg ${
                     feedback.correct
-                      ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
-                      : "bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300"
+                      ? "bg-amber-400/15 text-amber-300 border border-amber-400/30"
+                      : "bg-red-500/15 text-red-300 border border-red-500/30"
                   }`}
                   data-testid="text-feedback"
                 >
-                  <span className="flex items-center justify-center gap-2">
+                  <span className="flex flex-wrap items-center justify-center gap-2">
                     {feedback.correct ? (
-                      <Check className="w-5 h-5" />
+                      <Shield className="w-6 h-6" />
                     ) : (
-                      <X className="w-5 h-5" />
+                      <Flame className="w-6 h-6" />
                     )}
                     {feedback.message}
                   </span>
@@ -423,7 +606,7 @@ export default function MathGame() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.4 }}
-        className="mt-6"
+        className="mt-6 relative z-10"
       >
         <Button
           variant="outline"
@@ -432,7 +615,7 @@ export default function MathGame() {
           data-testid="button-reset"
         >
           <RefreshCw className="w-4 h-4 mr-1.5" />
-          Start Over
+          New Battle
         </Button>
       </motion.div>
 
@@ -441,10 +624,10 @@ export default function MathGame() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="mt-4 text-sm text-muted-foreground text-center"
+        className="mt-4 text-sm text-muted-foreground text-center relative z-10"
         data-testid="text-tip"
       >
-        Tip: Press Enter to submit your answer quickly!
+        Tip: Press Enter to attack the dragon faster!
       </motion.p>
     </div>
   );
