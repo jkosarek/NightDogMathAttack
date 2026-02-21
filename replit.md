@@ -4,6 +4,7 @@
 A fun dog-and-dragon themed math game for kids. Choose to play as the heroic dog or the mighty dragon, then battle the opponent by solving math questions! Covers addition, subtraction, multiplication, and division with animations, score tracking, and themed feedback messages.
 
 ## Recent Changes
+- 2026-02-21: Added level system (1-3) with number ranges 1-5, 1-7, 1-11; auto level-up after 5 correct answers; level display with progress bar
 - 2026-02-20: Added character selection screen - player can choose to be the dog or the dragon, with adapted messages, animations, and labels
 - 2026-02-20: Upgraded to "Night Dog Math Attack" theme with dog hero, dragon villain, nighttime color scheme, shake/bounce/flash animations, themed feedback messages, and generated character images
 - 2026-02-20: Initial build of math game with all 4 operations, score tracking, streaks, and kid-friendly theme

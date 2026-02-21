@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Zap, Check, X, RefreshCw, Plus, Minus, Divide, Swords, Moon, Shield, Flame } from "lucide-react";
+import { Trophy, Star, Zap, Check, X, RefreshCw, Plus, Minus, Divide, Swords, Moon, Shield, Flame, ArrowUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* ===== OPERATION SYMBOLS ===== */
@@ -124,34 +124,46 @@ function getOperationLabel(op: Operation): string {
   }
 }
 
+/* ===== LEVEL SETTINGS ===== */
+/* Each level uses a different range of numbers */
+/* Level 1: numbers 1-5, Level 2: numbers 1-7, Level 3: numbers 1-11 */
+const LEVEL_MAX_NUMBER: Record<number, number> = {
+  1: 5,
+  2: 7,
+  3: 11,
+};
+const MAX_LEVEL = 3;
+const CORRECT_TO_LEVEL_UP = 5;
+
 /* ===== GENERATE A NEW MATH QUESTION ===== */
-/* This function creates a random math problem */
-function generateQuestion(operation: Operation): { num1: number; num2: number; answer: number } {
+/* This function creates a random math problem using the level's number range */
+function generateQuestion(operation: Operation, level: number = 1): { num1: number; num2: number; answer: number } {
   let num1: number, num2: number, answer: number;
+  const maxNum = LEVEL_MAX_NUMBER[level] || 5;
 
   switch (operation) {
     case "+":
-      /* Addition: numbers from 1 to 50 */
-      num1 = Math.floor(Math.random() * 50) + 1;
-      num2 = Math.floor(Math.random() * 50) + 1;
+      /* Addition: numbers from 1 to maxNum */
+      num1 = Math.floor(Math.random() * maxNum) + 1;
+      num2 = Math.floor(Math.random() * maxNum) + 1;
       answer = num1 + num2;
       break;
     case "-":
       /* Subtraction: make sure the answer is never negative */
-      num1 = Math.floor(Math.random() * 50) + 1;
+      num1 = Math.floor(Math.random() * maxNum) + 1;
       num2 = Math.floor(Math.random() * num1) + 1;
       answer = num1 - num2;
       break;
     case "x":
-      /* Multiplication: numbers from 1 to 12 (times tables) */
-      num1 = Math.floor(Math.random() * 12) + 1;
-      num2 = Math.floor(Math.random() * 12) + 1;
+      /* Multiplication: numbers from 1 to maxNum */
+      num1 = Math.floor(Math.random() * maxNum) + 1;
+      num2 = Math.floor(Math.random() * maxNum) + 1;
       answer = num1 * num2;
       break;
     case "/":
       /* Division: make sure it divides evenly (no remainders) */
-      num2 = Math.floor(Math.random() * 12) + 1;
-      answer = Math.floor(Math.random() * 12) + 1;
+      num2 = Math.floor(Math.random() * maxNum) + 1;
+      answer = Math.floor(Math.random() * maxNum) + 1;
       num1 = num2 * answer;
       break;
     default:
@@ -242,7 +254,9 @@ export default function MathGame() {
   /* ----- Game State ----- */
   /* These keep track of everything in the game */
   const [operation, setOperation] = useState<Operation>("x");
-  const [question, setQuestion] = useState(() => generateQuestion("x"));
+  const [level, setLevel] = useState(1);
+  const [correctInLevel, setCorrectInLevel] = useState(0);
+  const [question, setQuestion] = useState(() => generateQuestion("x", 1));
   const [userAnswer, setUserAnswer] = useState("");
   const [score, setScore] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
@@ -268,14 +282,15 @@ export default function MathGame() {
   }, [playerCharacter]);
 
   /* ----- Create a new question ----- */
-  const newQuestion = useCallback((op: Operation) => {
-    setQuestion(generateQuestion(op));
+  /* Uses the current level to pick the right number range */
+  const newQuestion = useCallback((op: Operation, lvl?: number) => {
+    setQuestion(generateQuestion(op, lvl ?? level));
     setUserAnswer("");
     setShowFeedback(false);
     setDogAnimate("");
     setDragonAnimate("");
     setTimeout(() => inputRef.current?.focus(), 100);
-  }, []);
+  }, [level]);
 
   /* ----- Switch to a different operation ----- */
   const switchOperation = useCallback((op: Operation) => {
@@ -298,10 +313,26 @@ export default function MathGame() {
       setScore((prev) => prev + 1);
       setStreak(newStreak);
       if (newStreak > bestStreak) setBestStreak(newStreak);
-      setFeedback({
-        correct: true,
-        message: pickRandom(isDog ? DOG_WINNER_MESSAGES : DRAGON_WINNER_MESSAGES),
-      });
+
+      /* Check if the player levels up (5 correct answers in this level) */
+      const newCorrectInLevel = correctInLevel + 1;
+      let nextLevel = level;
+      if (newCorrectInLevel >= CORRECT_TO_LEVEL_UP && level < MAX_LEVEL) {
+        nextLevel = level + 1;
+        setLevel(nextLevel);
+        setCorrectInLevel(0);
+        setFeedback({
+          correct: true,
+          message: `LEVEL UP! Welcome to Level ${nextLevel}! ${pickRandom(isDog ? DOG_WINNER_MESSAGES : DRAGON_WINNER_MESSAGES)}`,
+        });
+      } else {
+        setCorrectInLevel(newCorrectInLevel);
+        setFeedback({
+          correct: true,
+          message: pickRandom(isDog ? DOG_WINNER_MESSAGES : DRAGON_WINNER_MESSAGES),
+        });
+      }
+
       /* Make the player's character bounce, opponent shakes */
       if (isDog) {
         setDogAnimate("bounce");
@@ -310,6 +341,12 @@ export default function MathGame() {
         setDragonAnimate("bounce");
         setDogAnimate("shake");
       }
+
+      /* Wait 2 seconds then show a new question (use nextLevel for the new question) */
+      setShowFeedback(true);
+      setTimeout(() => {
+        newQuestion(operation, nextLevel);
+      }, 2000);
     } else {
       /* The answer is wrong - the opponent strikes! */
       setStreak(0);
@@ -325,15 +362,14 @@ export default function MathGame() {
         setDogAnimate("flash");
         setDragonAnimate("shake");
       }
+
+      setShowFeedback(true);
+      /* Wait 2 seconds then show a new question */
+      setTimeout(() => {
+        newQuestion(operation);
+      }, 2000);
     }
-
-    setShowFeedback(true);
-
-    /* Wait 2 seconds then show a new question */
-    setTimeout(() => {
-      newQuestion(operation);
-    }, 2000);
-  }, [userAnswer, question, streak, bestStreak, operation, newQuestion, isDog]);
+  }, [userAnswer, question, streak, bestStreak, operation, newQuestion, isDog, level, correctInLevel]);
 
   /* ----- Handle pressing Enter to submit ----- */
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -348,11 +384,13 @@ export default function MathGame() {
     setTotalQuestions(0);
     setStreak(0);
     setBestStreak(0);
+    setLevel(1);
+    setCorrectInLevel(0);
     setFeedback(null);
     setShowFeedback(false);
     setDogAnimate("");
     setDragonAnimate("");
-    newQuestion(operation);
+    newQuestion(operation, 1);
   };
 
   /* ----- Character Selection Handler ----- */
@@ -367,12 +405,14 @@ export default function MathGame() {
     setTotalQuestions(0);
     setStreak(0);
     setBestStreak(0);
+    setLevel(1);
+    setCorrectInLevel(0);
     setFeedback(null);
     setShowFeedback(false);
     setDogAnimate("");
     setDragonAnimate("");
     setUserAnswer("");
-    setQuestion(generateQuestion(operation));
+    setQuestion(generateQuestion(operation, 1));
   };
 
   /* ===== CHARACTER SELECTION SCREEN ===== */
@@ -607,6 +647,44 @@ export default function MathGame() {
             <span className="ml-1.5">{getOperationLabel(op)}</span>
           </Button>
         ))}
+      </motion.div>
+
+      {/* ===== LEVEL DISPLAY ===== */}
+      {/* Shows current level and progress toward the next level */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="flex flex-col items-center mb-4 sm:mb-6 relative z-10 w-full max-w-lg"
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 font-bold text-base px-4 py-1" data-testid="text-level">
+            <ArrowUp className="w-4 h-4 mr-1.5" />
+            Level {level}
+          </Badge>
+          <span className="text-sm text-muted-foreground" data-testid="text-level-range">
+            Numbers 1–{LEVEL_MAX_NUMBER[level]}
+          </span>
+        </div>
+        {level < MAX_LEVEL && (
+          <div className="w-full max-w-xs">
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>{correctInLevel}/{CORRECT_TO_LEVEL_UP} to next level</span>
+            </div>
+            <div className="w-full bg-cyan-500/10 rounded-full h-2 overflow-hidden">
+              <motion.div
+                className="bg-cyan-400 h-2 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${(correctInLevel / CORRECT_TO_LEVEL_UP) * 100}%` }}
+                transition={{ duration: 0.3 }}
+                data-testid="progress-level"
+              />
+            </div>
+          </div>
+        )}
+        {level >= MAX_LEVEL && (
+          <span className="text-xs text-cyan-300/70" data-testid="text-max-level">Max level reached!</span>
+        )}
       </motion.div>
 
       {/* ===== THE QUESTION CARD ===== */}
