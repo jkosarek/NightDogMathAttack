@@ -126,45 +126,57 @@ function getOperationLabel(op: Operation): string {
 }
 
 /* ===== LEVEL SETTINGS ===== */
-/* Each level uses a different range of numbers */
-/* Level 1: numbers 1-5, Level 2: numbers 1-7, Level 3: numbers 1-11 */
-const LEVEL_MAX_NUMBER: Record<number, number> = {
-  1: 5,
-  2: 7,
-  3: 11,
-};
-const MAX_LEVEL = 3;
+/* 15 levels total! Level 1 uses easy numbers, Level 2 gets a bit harder,
+   and Level 3+ all use the same range (the math doesn't get harder after Level 3) */
+/* Level 1: numbers 1-5, Level 2: numbers 4-7, Levels 3-15: numbers 4-11 */
+function getLevelMin(level: number): number {
+  if (level <= 1) return 1;
+  return 4;
+}
+function getLevelMax(level: number): number {
+  if (level <= 1) return 5;
+  if (level <= 2) return 7;
+  return 11;
+}
+const MAX_LEVEL = 15;
 const CORRECT_TO_LEVEL_UP = 5;
+
+/* ===== HELPER: pick a random number in a range ===== */
+/* Gets a random whole number between min and max (including both) */
+function randomInRange(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 /* ===== GENERATE A NEW MATH QUESTION ===== */
 /* This function creates a random math problem using the level's number range */
 function generateQuestion(operation: Operation, level: number = 1): { num1: number; num2: number; answer: number } {
   let num1: number, num2: number, answer: number;
-  const maxNum = LEVEL_MAX_NUMBER[level] || 5;
+  const minNum = getLevelMin(level);
+  const maxNum = getLevelMax(level);
 
   switch (operation) {
     case "+":
-      /* Addition: numbers from 1 to maxNum */
-      num1 = Math.floor(Math.random() * maxNum) + 1;
-      num2 = Math.floor(Math.random() * maxNum) + 1;
+      /* Addition: numbers from minNum to maxNum */
+      num1 = randomInRange(minNum, maxNum);
+      num2 = randomInRange(minNum, maxNum);
       answer = num1 + num2;
       break;
     case "-":
       /* Subtraction: make sure the answer is never negative */
-      num1 = Math.floor(Math.random() * maxNum) + 1;
-      num2 = Math.floor(Math.random() * num1) + 1;
+      num1 = randomInRange(minNum, maxNum);
+      num2 = randomInRange(minNum, num1);
       answer = num1 - num2;
       break;
     case "x":
-      /* Multiplication: numbers from 1 to maxNum */
-      num1 = Math.floor(Math.random() * maxNum) + 1;
-      num2 = Math.floor(Math.random() * maxNum) + 1;
+      /* Multiplication: numbers from minNum to maxNum */
+      num1 = randomInRange(minNum, maxNum);
+      num2 = randomInRange(minNum, maxNum);
       answer = num1 * num2;
       break;
     case "/":
       /* Division: make sure it divides evenly (no remainders) */
-      num2 = Math.floor(Math.random() * maxNum) + 1;
-      answer = Math.floor(Math.random() * maxNum) + 1;
+      num2 = randomInRange(minNum, maxNum);
+      answer = randomInRange(minNum, maxNum);
       num1 = num2 * answer;
       break;
     default:
@@ -717,7 +729,7 @@ export default function MathGame() {
             Level {level}
           </Badge>
           <span className="text-sm text-muted-foreground" data-testid="text-level-range">
-            Numbers 1–{LEVEL_MAX_NUMBER[level]}
+            Numbers {getLevelMin(level)}–{getLevelMax(level)}
           </span>
         </div>
         {level < MAX_LEVEL && (

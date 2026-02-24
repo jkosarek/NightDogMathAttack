@@ -4,8 +4,9 @@
 A fun dog-and-dragon themed math game for kids. Choose to play as the heroic dog or the mighty dragon, then battle the opponent by solving math questions! Covers addition, subtraction, multiplication, and division with animations, score tracking, and themed feedback messages. Includes a Flappy Bird-style bonus mini-game between levels!
 
 ## Recent Changes
+- 2026-02-24: Expanded to 15 levels; Level 2+ excludes easy numbers (1-3); difficulty caps at Level 3 range (4-11)
 - 2026-02-24: Added Flappy Bird-style mini-game that unlocks when player completes a level; HTML canvas, spacebar controls, gravity physics, obstacle dodging, survival timer
-- 2026-02-21: Added level system (1-3) with number ranges 1-5, 1-7, 1-11; auto level-up after 5 correct answers; level display with progress bar
+- 2026-02-21: Added level system with number ranges and auto level-up after 5 correct answers; level display with progress bar
 - 2026-02-20: Added character selection screen - player can choose to be the dog or the dragon, with adapted messages, animations, and labels
 - 2026-02-20: Upgraded to "Night Dog Math Attack" theme with dog hero, dragon villain, nighttime color scheme, shake/bounce/flash animations, themed feedback messages, and generated character images
 - 2026-02-20: Initial build of math game with all 4 operations, score tracking, streaks, and kid-friendly theme
@@ -22,7 +23,7 @@ A fun dog-and-dragon themed math game for kids. Choose to play as the heroic dog
 ## Key Features
 - Character selection: Play as the dog OR the dragon
 - 4 math operations: Addition, Subtraction, Multiplication, Division
-- 3-level progression system (Level 1: 1-5, Level 2: 1-7, Level 3: 1-11)
+- 15-level progression system (Level 1: 1-5, Level 2: 4-7, Levels 3-15: 4-11)
 - Flappy mini-game bonus between levels (spacebar to fly, dodge obstacles, survival timer)
 - Dog hero and dragon villain characters with images
 - Character-specific feedback messages (dog winner/dragon winner on correct, bad dragon/bad dog on wrong)
