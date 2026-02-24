@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Star, Zap, Check, X, RefreshCw, Plus, Minus, Divide, Swords, Moon, Shield, Flame, ArrowUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import FlappyMiniGame from "@/components/flappy-mini-game";
 
 /* ===== OPERATION SYMBOLS ===== */
 /* These are the 4 math operations the game uses */
@@ -266,6 +267,12 @@ export default function MathGame() {
   const [showFeedback, setShowFeedback] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  /* ----- Mini-game state ----- */
+  /* When true, the flappy mini-game is shown instead of math questions */
+  const [showMiniGame, setShowMiniGame] = useState(false);
+  /* Which level was just completed (used to tell the mini-game) */
+  const [miniGameLevel, setMiniGameLevel] = useState(1);
+
   /* ----- Dog and Dragon animation state ----- */
   /* These control when the dog and dragon animate */
   const [dogAnimate, setDogAnimate] = useState("");
@@ -323,30 +330,47 @@ export default function MathGame() {
         setCorrectInLevel(0);
         setFeedback({
           correct: true,
-          message: `LEVEL UP! Welcome to Level ${nextLevel}! ${pickRandom(isDog ? DOG_WINNER_MESSAGES : DRAGON_WINNER_MESSAGES)}`,
+          message: `LEVEL UP! Mini-game time! ${pickRandom(isDog ? DOG_WINNER_MESSAGES : DRAGON_WINNER_MESSAGES)}`,
         });
+
+        /* Make the player's character bounce, opponent shakes */
+        if (isDog) {
+          setDogAnimate("bounce");
+          setDragonAnimate("shake");
+        } else {
+          setDragonAnimate("bounce");
+          setDogAnimate("shake");
+        }
+
+        /* Show the level-up feedback, then launch the mini-game! */
+        setShowFeedback(true);
+        setMiniGameLevel(level);
+        setTimeout(() => {
+          setShowFeedback(false);
+          setShowMiniGame(true);
+        }, 2000);
       } else {
         setCorrectInLevel(newCorrectInLevel);
         setFeedback({
           correct: true,
           message: pickRandom(isDog ? DOG_WINNER_MESSAGES : DRAGON_WINNER_MESSAGES),
         });
-      }
 
-      /* Make the player's character bounce, opponent shakes */
-      if (isDog) {
-        setDogAnimate("bounce");
-        setDragonAnimate("shake");
-      } else {
-        setDragonAnimate("bounce");
-        setDogAnimate("shake");
-      }
+        /* Make the player's character bounce, opponent shakes */
+        if (isDog) {
+          setDogAnimate("bounce");
+          setDragonAnimate("shake");
+        } else {
+          setDragonAnimate("bounce");
+          setDogAnimate("shake");
+        }
 
-      /* Wait 2 seconds then show a new question (use nextLevel for the new question) */
-      setShowFeedback(true);
-      setTimeout(() => {
-        newQuestion(operation, nextLevel);
-      }, 2000);
+        /* Wait 2 seconds then show a new question */
+        setShowFeedback(true);
+        setTimeout(() => {
+          newQuestion(operation, nextLevel);
+        }, 2000);
+      }
     } else {
       /* The answer is wrong - the opponent strikes! */
       setStreak(0);
@@ -392,6 +416,19 @@ export default function MathGame() {
     setDragonAnimate("");
     newQuestion(operation, 1);
   };
+
+  /* ----- Handle when the mini-game finishes ----- */
+  /* The player finished the flappy game, now go back to math! */
+  const handleMiniGameComplete = useCallback((survivalTime: number) => {
+    setShowMiniGame(false);
+    setFeedback(null);
+    setShowFeedback(false);
+    setUserAnswer("");
+    newQuestion(operation, level);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  }, [operation, level, newQuestion]);
 
   /* ----- Character Selection Handler ----- */
   const selectCharacter = (character: PlayerCharacter) => {
@@ -495,6 +532,23 @@ export default function MathGame() {
             </p>
           </motion.button>
         </motion.div>
+      </div>
+    );
+  }
+
+  /* ===== MINI-GAME SCREEN ===== */
+  /* When the player levels up, show the flappy mini-game! */
+  if (showMiniGame && playerCharacter) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative">
+        <Stars />
+        <div className="relative z-10 w-full max-w-2xl">
+          <FlappyMiniGame
+            playerCharacter={playerCharacter}
+            level={miniGameLevel}
+            onComplete={handleMiniGameComplete}
+          />
+        </div>
       </div>
     );
   }
