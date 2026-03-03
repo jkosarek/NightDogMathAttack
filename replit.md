@@ -4,6 +4,7 @@
 A fun dog-and-dragon themed math game for kids. Choose to play as the heroic dog or the mighty dragon, then battle the opponent by solving math questions! Covers addition, subtraction, multiplication, and division with animations, score tracking, and themed feedback messages. Includes a Flappy Bird-style bonus mini-game between levels!
 
 ## Recent Changes
+- 2026-03-03: Added victory screen when player completes Level 15 — "YOU'VE WON!" with confetti, sparkles, final score, best streak, animated characters, and Play Again / Switch Character buttons
 - 2026-02-24: Expanded to 15 levels; Level 2+ excludes easy numbers (1-3); difficulty caps at Level 3 range (4-11)
 - 2026-02-24: Added Flappy Bird-style mini-game that unlocks when player completes a level; HTML canvas, spacebar controls, gravity physics, obstacle dodging, survival timer
 - 2026-02-21: Added level system with number ranges and auto level-up after 5 correct answers; level display with progress bar
@@ -24,6 +25,7 @@ A fun dog-and-dragon themed math game for kids. Choose to play as the heroic dog
 - Character selection: Play as the dog OR the dragon
 - 4 math operations: Addition, Subtraction, Multiplication, Division
 - 15-level progression system (Level 1: 1-5, Level 2: 4-7, Levels 3-15: 4-11)
+- Victory screen on completing Level 15 with confetti, sparkles, score/streak display, and Play Again button
 - Flappy mini-game bonus between levels (spacebar to fly, dodge obstacles, survival timer)
 - Dog hero and dragon villain characters with images
 - Character-specific feedback messages (dog winner/dragon winner on correct, bad dragon/bad dog on wrong)
@@ -34,6 +36,17 @@ A fun dog-and-dragon themed math game for kids. Choose to play as the heroic dog
 - Auto-generates new question after answering
 - Enter key support for quick submission
 - Responsive design for all screen sizes
+
+## Game States
+- `showVictory` — triggers the victory celebration screen after completing Level 15
+- `showMiniGame` — triggers the flappy mini-game between levels
+- `playerCharacter` — null shows character selection, "dog" or "dragon" shows the game
+
+## Key Functions
+- `restartGame()` — resets all state and starts over from Level 1
+- `goToCharacterSelect()` — goes back to character pick screen
+- `generateQuestion()` — creates a random math problem for the current level
+- `getLevelMin()` / `getLevelMax()` — returns the number range for each level
 
 ## User Preferences
 - Code should be simple and well-commented (kid-friendly learning project)

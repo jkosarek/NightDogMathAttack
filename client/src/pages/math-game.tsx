@@ -285,6 +285,10 @@ export default function MathGame() {
   /* Which level was just completed (used to tell the mini-game) */
   const [miniGameLevel, setMiniGameLevel] = useState(1);
 
+  /* ----- Victory state ----- */
+  /* When true, the player beat all 15 levels — show the victory screen! */
+  const [showVictory, setShowVictory] = useState(false);
+
   /* ----- Dog and Dragon animation state ----- */
   /* These control when the dog and dragon animate */
   const [dogAnimate, setDogAnimate] = useState("");
@@ -336,7 +340,30 @@ export default function MathGame() {
       /* Check if the player levels up (5 correct answers in this level) */
       const newCorrectInLevel = correctInLevel + 1;
       let nextLevel = level;
-      if (newCorrectInLevel >= CORRECT_TO_LEVEL_UP && level < MAX_LEVEL) {
+
+      /* ★ VICTORY! The player finished all 15 levels! ★ */
+      if (newCorrectInLevel >= CORRECT_TO_LEVEL_UP && level >= MAX_LEVEL) {
+        setCorrectInLevel(newCorrectInLevel);
+        setFeedback({
+          correct: true,
+          message: isDog ? "YOU DID IT! You defeated all the dragons!" : "YOU DID IT! You defeated all the dogs!",
+        });
+
+        if (isDog) {
+          setDogAnimate("bounce");
+          setDragonAnimate("shake");
+        } else {
+          setDragonAnimate("bounce");
+          setDogAnimate("shake");
+        }
+
+        /* Show the victory message, then switch to the victory screen */
+        setShowFeedback(true);
+        setTimeout(() => {
+          setShowFeedback(false);
+          setShowVictory(true);
+        }, 2500);
+      } else if (newCorrectInLevel >= CORRECT_TO_LEVEL_UP && level < MAX_LEVEL) {
         nextLevel = level + 1;
         setLevel(nextLevel);
         setCorrectInLevel(0);
@@ -414,8 +441,9 @@ export default function MathGame() {
     }
   };
 
-  /* ----- Reset the game back to the start ----- */
-  const resetGame = () => {
+  /* ----- Restart the game from the very beginning ----- */
+  /* This resets everything so you can play all 15 levels again! */
+  const restartGame = () => {
     setScore(0);
     setTotalQuestions(0);
     setStreak(0);
@@ -424,6 +452,8 @@ export default function MathGame() {
     setCorrectInLevel(0);
     setFeedback(null);
     setShowFeedback(false);
+    setShowVictory(false);
+    setShowMiniGame(false);
     setDogAnimate("");
     setDragonAnimate("");
     newQuestion(operation, 1);
@@ -458,6 +488,8 @@ export default function MathGame() {
     setCorrectInLevel(0);
     setFeedback(null);
     setShowFeedback(false);
+    setShowVictory(false);
+    setShowMiniGame(false);
     setDogAnimate("");
     setDragonAnimate("");
     setUserAnswer("");
@@ -543,6 +575,212 @@ export default function MathGame() {
               Be the mighty dragon and outsmart the dog!
             </p>
           </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  /* ===== VICTORY SCREEN ===== */
+  /* You beat all 15 levels! This screen celebrates your amazing win! */
+  if (showVictory && playerCharacter) {
+    /* These are the fun confetti pieces that float around the screen */
+    const confettiEmojis = ["🎉", "⭐", "🏆", "✨", "🎊", "💥", "🌟", "🥇"];
+
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
+        {/* Twinkling stars in the background */}
+        <Stars />
+
+        {/* ===== FLOATING CONFETTI ===== */}
+        {/* These emoji float and spin around to celebrate your win! */}
+        {confettiEmojis.map((emoji, i) => (
+          <motion.div
+            key={`confetti-${i}`}
+            className="absolute text-3xl sm:text-4xl pointer-events-none select-none"
+            style={{
+              left: `${10 + (i * 11) % 80}%`,
+              top: `${5 + (i * 17) % 70}%`,
+            }}
+            animate={{
+              y: [0, -30, 0, 30, 0],
+              x: [0, 15, -15, 10, 0],
+              rotate: [0, 360],
+              scale: [1, 1.2, 0.9, 1.1, 1],
+            }}
+            transition={{
+              duration: 3 + (i % 3),
+              repeat: Infinity,
+              delay: i * 0.3,
+              ease: "easeInOut",
+            }}
+            data-testid={`confetti-${i}`}
+          >
+            {emoji}
+          </motion.div>
+        ))}
+
+        {/* ===== EXTRA SPARKLE PARTICLES ===== */}
+        {/* Little dots of light that twinkle all over */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <motion.div
+            key={`sparkle-${i}`}
+            className="absolute w-2 h-2 rounded-full bg-amber-400 pointer-events-none"
+            style={{
+              left: `${5 + (i * 8) % 90}%`,
+              top: `${10 + (i * 13) % 80}%`,
+            }}
+            animate={{
+              opacity: [0, 1, 0],
+              scale: [0, 1.5, 0],
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              delay: i * 0.2,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+
+        {/* ===== THE BIG "YOU'VE WON!" MESSAGE ===== */}
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, type: "spring", bounce: 0.5 }}
+          className="relative z-10 text-center"
+        >
+          <h1
+            className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4"
+            style={{
+              background: "linear-gradient(to right, #f59e0b, #fbbf24, #f59e0b)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              filter: "drop-shadow(0 0 20px rgba(245, 158, 11, 0.5))",
+            }}
+            data-testid="text-victory-title"
+          >
+            YOU'VE WON!
+          </h1>
+
+          {/* A glowing line under the title */}
+          <motion.div
+            className="h-1 mx-auto rounded-full bg-gradient-to-r from-transparent via-amber-400 to-transparent"
+            initial={{ width: 0 }}
+            animate={{ width: "80%" }}
+            transition={{ duration: 1, delay: 0.5 }}
+          />
+        </motion.div>
+
+        {/* ===== CHARACTER IMAGES ===== */}
+        {/* Show the winning character big and bouncy! */}
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="relative z-10 flex items-center gap-6 sm:gap-10 mt-6 mb-6"
+        >
+          {/* The winner bounces up and down */}
+          <motion.img
+            src={isDog ? "/images/dog-hero.png" : "/images/dragon-villain.png"}
+            alt={isDog ? "Dog Hero" : "Dragon Champion"}
+            className="w-24 h-24 sm:w-32 sm:h-32 object-contain"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+            data-testid="img-victory-winner"
+          />
+          {/* The loser is small and faded */}
+          <motion.img
+            src={isDog ? "/images/dragon-villain.png" : "/images/dog-hero.png"}
+            alt={isDog ? "Defeated Dragon" : "Defeated Dog"}
+            className="w-14 h-14 sm:w-20 sm:h-20 object-contain opacity-40 grayscale"
+            animate={{ rotate: [0, -5, 5, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            data-testid="img-victory-loser"
+          />
+        </motion.div>
+
+        {/* ===== CELEBRATORY MESSAGE ===== */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="relative z-10 text-xl sm:text-2xl text-amber-300 font-bold text-center mb-6"
+          data-testid="text-victory-message"
+        >
+          {isDog
+            ? "🐕 You defeated all the dragons! 🐉"
+            : "🐉 You defeated all the dogs! 🐕"}
+        </motion.p>
+
+        {/* ===== FINAL SCORE AND STATS ===== */}
+        {/* This card shows how well you did */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="relative z-10"
+        >
+          <Card className="p-6 sm:p-8 border-2 border-amber-500/50 bg-card/80 backdrop-blur-sm max-w-sm w-full">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-2 text-amber-400">
+                <Trophy className="w-6 h-6" />
+                <span className="text-lg font-bold">Final Stats</span>
+                <Trophy className="w-6 h-6" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <p className="text-3xl font-extrabold text-green-400" data-testid="text-victory-score">
+                    {score}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Final Score</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-extrabold text-cyan-400" data-testid="text-victory-streak">
+                    {bestStreak}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Best Streak</p>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  You answered {score} out of {totalQuestions} questions correctly!
+                </p>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* ===== PLAY AGAIN AND SWITCH CHARACTER BUTTONS ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1 }}
+          className="relative z-10 flex flex-col sm:flex-row gap-3 mt-6"
+        >
+          {/* Play Again — restart from Level 1 with the same character */}
+          <Button
+            onClick={restartGame}
+            size="lg"
+            className="font-bold text-lg bg-amber-500 text-black"
+            data-testid="button-play-again"
+          >
+            <RefreshCw className="w-5 h-5 mr-2" />
+            Play Again
+          </Button>
+
+          {/* Switch Character — go back to the character selection screen */}
+          <Button
+            onClick={goToCharacterSelect}
+            variant="outline"
+            size="lg"
+            className="font-semibold"
+            data-testid="button-victory-switch"
+          >
+            <Swords className="w-5 h-5 mr-2" />
+            Switch Character
+          </Button>
         </motion.div>
       </div>
     );
@@ -870,7 +1108,7 @@ export default function MathGame() {
       >
         <Button
           variant="outline"
-          onClick={resetGame}
+          onClick={restartGame}
           className="font-semibold"
           data-testid="button-reset"
         >
